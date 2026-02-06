@@ -14,40 +14,52 @@
         {{ log_content | safe }}
     </div>
 
+    <!-- 自动刷新提示 -->
+    <div class="text-muted small mt-1" id="auto-refresh-status">
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 正在实时更新日志...
+    </div>
+
     <!-- 分页按钮 -->
     <div class="d-flex justify-content-between mt-3">
-        <a href="{{ url_for('logs', config_id=config_id, page=1) }}" class="btn btn-secondary btn-sm">第1页</a>
+        <a href="{{ url_for('logs', config_id=config_id, page=1) }}" class="btn btn-secondary btn-sm">第1页 (最新)</a>
         <a href="{{ url_for('logs', config_id=config_id, page=page-1) }}" class="btn btn-secondary btn-sm {{ 'disabled' if page == 1 else '' }}">上一页</a>
 
         <form class="d-inline-block" action="{{ url_for('logs', config_id=config_id) }}" method="get">
             <input type="number" name="page" value="{{ page }}" min="1" max="{{ total_pages }}" class="form-control d-inline-block" style="width: 60px;">
             <button type="submit" class="btn btn-primary btn-sm">跳转</button>
         </form>
-
-        <a href="{{ url_for('logs', config_id=config_id, page=page+1) }}" class="btn btn-secondary btn-sm {{ 'disabled' if page == total_pages else '' }}">下一页</a>
+        
+        <a href="{{ url_for('logs', config_id=config_id, page=page+1) }}" class="btn btn-secondary btn-sm {{ 'disabled' if page >= total_pages else '' }}">下一页</a>
         <a href="{{ url_for('logs', config_id=config_id, page=total_pages) }}" class="btn btn-secondary btn-sm">最后一页</a>
     </div>
-
-    <!-- 滑到底部按钮，右下角定位 -->
-    <button id="scroll-button" class="btn btn-secondary btn-sm" style="position: fixed; bottom: 10px; right: 10px;">
-        滑到底部
-    </button>
-
-    <!-- JavaScript 用于滑到底部和处理换行符 -->
-    <script>
-        // 使用 JavaScript 将日志内容中的换行符转换为 HTML 中的 <br>
-        const logContentElement = document.getElementById('log-content');
-        let logContent = logContentElement.innerText;
-        logContentElement.innerHTML = logContent.replace(/\n/g, '<br>');
-
-        // 滑到底部按钮点击事件
-        const scrollButton = document.getElementById('scroll-button');
-        scrollButton.addEventListener('click', function() {
-            logContentElement.scrollTo({
-                top: logContentElement.scrollHeight,
-                behavior: 'smooth' // 平滑滚动
-            });
-        });
-    </script>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var configId = {{ config_id }};
+        var currentPage = {{ page }};
+        var logContentDiv = document.getElementById('log-content');
+        var refreshStatus = document.getElementById('auto-refresh-status');
+        
+        // 只有在第一页时才自动刷新，或者可以通过参数控制
+        // 这里假设用户总是希望看到更新，特别是第一页
+        if (currentPage === 1) {
+            setInterval(function() {
+                fetch('/api/logs/' + configId + '?page=' + currentPage)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.content) {
+                            logContentDiv.innerHTML = data.content;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching logs:', error);
+                        refreshStatus.innerHTML = '<span class="text-danger">更新失败</span>';
+                    });
+            }, 3000); // 每3秒刷新一次
+        } else {
+            refreshStatus.style.display = 'none';
+        }
+    });
+</script>
 {% endblock %}

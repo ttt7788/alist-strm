@@ -483,80 +483,62 @@ def settings():
 
 @app.route('/logs/<int:config_id>')
 def logs(config_id):
-    log_content, total_pages, page = get_log_content_paginated(config_id, request.args.get('page', 1))
+    log_content = get_log_content_tail(config_id)
     
     if log_content is None:
          abort(404, description=f"没有找到与配置 ID {config_id} 相关的日志文件")
 
-    # 渲染模板并传递分页信息
+    # 渲染模板
     return render_template(
         'logs_single.html',
         log_content=log_content,
-        config_id=config_id,
-        page=page,
-        total_pages=total_pages
+        config_id=config_id
     )
 
 @app.route('/api/logs/<int:config_id>')
 def api_logs(config_id):
-    log_content, total_pages, page = get_log_content_paginated(config_id, request.args.get('page', 1))
+    log_content = get_log_content_tail(config_id)
     
     if log_content is None:
         return jsonify({'error': 'Log file not found'}), 404
         
     return jsonify({
-        'content': log_content,
-        'page': page,
-        'total_pages': total_pages
+        'content': log_content
     })
 
-def get_log_content_paginated(config_id, page_param):
+def get_log_content_tail(config_id, max_lines=2000):
     log_dir = os.path.join(os.getcwd(), 'logs')
 
     # 获取指定 config_id 的所有日志文件（以 config_id 为前缀）
     log_files = [f for f in os.listdir(log_dir) if f.startswith(f'config_{config_id}') and f.endswith('.log')]
 
     if not log_files:
-        return None, 0, 1
+        return None
 
     # 按修改时间倒序排列，获取最新的日志文件
     latest_log_file = max(log_files, key=lambda f: os.path.getmtime(os.path.join(log_dir, f)))
     log_file_path = os.path.join(log_dir, latest_log_file)
 
-    # 分页参数
-    try:
-        page = int(page_param)
-    except ValueError:
-        page = 1
-        
-    per_page = 100  # 每页显示100行日志
-    start = (page - 1) * per_page
-    end = start + per_page
-
     # 读取日志文件
-    with open(log_file_path, 'r', encoding='utf-8') as log_file:
-        log_lines = log_file.readlines()
-    
-    # 反转日志，使最新的日志在最前面
-    log_lines.reverse()
-
-    # 计算总页数
-    total_lines = len(log_lines)
-    total_pages = (total_lines // per_page) + (1 if total_lines % per_page > 0 else 0)
-
-    # 确保页码合法
-    if page < 1:
-        page = 1
-    elif page > total_pages and total_pages > 0:
-        page = total_pages
-
-    # 获取当前页的日志内容
-    current_page_lines = log_lines[start:end]
-
-    # 将当前页面的日志行转换成字符串，确保每行用 <br> 换行
-    log_content = '<br>'.join([line.rstrip() for line in current_page_lines])
-    
-    return log_content, total_pages, page
+    try:
+        with open(log_file_path, 'r', encoding='utf-8') as log_file:
+            # 读取所有行
+            log_lines = log_file.readlines()
+            
+            # 只保留最后 max_lines 行
+            if len(log_lines) > max_lines:
+                log_lines = log_lines[-max_lines:]
+            
+            # 反转日志，使最新的日志在最前面
+            log_lines.reverse()
+            
+            # 将日志行转换成字符串，确保每行用 <br> 换行
+            log_content = '<br>'.join([line.rstrip() for line in log_lines])
+            
+            return log_content
+    except Exception as e:
+        logger.error(f"读取日志文件时出错: {e}")
+        return None
 
 
 # 定义函数来运行 main.py

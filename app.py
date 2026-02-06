@@ -18,6 +18,10 @@ from task_scheduler import add_tasks_to_cron, update_tasks_in_cron, delete_tasks
 app = Flask(__name__)
 app.secret_key = 'www.tefuir0829.cn'
 
+# 初始化日志
+logger, _ = setup_logger('app')
+
+
 
 # 定义图片文件夹路径
 IMAGE_FOLDER = 'static/images'
@@ -537,7 +541,8 @@ def run_config(config_id):
     main_script_path = os.path.join(current_dir, 'main.py')
 
     if os.path.exists(main_script_path):
-        command = f"python3.9 {main_script_path} {config_id}"
+        # 使用 sys.executable 确保使用当前环境的 Python 解释器
+        command = f"{sys.executable} {main_script_path} {config_id}"
         logger.info(f"启动配置ID: {config_id} 的命令: {command}")
         subprocess.Popen(command, shell=True)
     else:

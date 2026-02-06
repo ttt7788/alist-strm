@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  alist-strm:
+    image: brian9909/alist-strm:latest
+    container_name: alist-strm
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./config:/config
+      - ./logs:/app/logs
+      - ./data:/data
+    environment:
+      - TZ=Asia/Shanghai
+    # 如果需要以非 root 用户运行，且宿主机有权限问题，可能需要根据实际情况调整权限
+    # 目前镜像默认以 root 运行

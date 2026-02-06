@@ -405,7 +405,6 @@ def process_with_cache(webdav, config, script_config, config_id, size_threshold,
         sys.exit(0)
 
     # 传递下载间隔范围（最小值和最大值）
-    min_interval, max_interval = config['download_interval_range']
     download_files_with_interval(min_interval, max_interval, logger)
 
     logger.info(f"总共下载了 {download_file_counter} 个文件")
@@ -456,7 +455,8 @@ if __name__ == '__main__':
 
         # 使用缓存策略处理文件，并传递 size_threshold
         try:
-            process_with_cache(webdav, config, script_config, config_id, script_config['size_threshold'], logger)
+            min_interval, max_interval = config.get('download_interval_range', (1, 3))
+            process_with_cache(webdav, config, script_config, config_id, script_config['size_threshold'], logger, min_interval, max_interval)
         except Exception as e:
             logger.error(f"处理文件时发生错误: {e}")
             sys.exit(1)

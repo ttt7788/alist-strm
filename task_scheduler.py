@@ -286,3 +286,51 @@ def run_task_immediately(task_id):
             print(f"运行任务 {task_id} 时发生错误: {e}")
     else:
         raise ValueError(f"找不到 task_id 为 {task_id} 的任务。")
+
+
+def stop_task(task_id):
+    """
+    尝试停止具有指定 task_id 的正在运行的任务。
+    """
+    try:
+        if os.name == 'nt':  # Windows
+            # 使用 wmic 查找并终止进程
+            # 注意：这里假设 task_id 在命令行参数中是唯一的
+            cmd = f'wmic process where "CommandLine like \'%{task_id}%\' and Name like \'%python%\'" call terminate'
+            result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if "ReturnValue = 0;" in result.stdout:
+                print(f"任务 {task_id} 已停止 (Windows)。")
+                return True, "任务已停止"
+            else:
+                return False, "未找到运行中的任务或无法停止"
+        else:  # Linux / Unix
+            # 使用 pgrep 查找进程 ID
+            # -f 匹配完整的命令行
+            cmd_pgrep = ['pgrep', '-f', task_id]
+            result = subprocess.run(cmd_pgrep, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            
+            pids = result.stdout.strip().split('\n')
+            killed_any = False
+            for pid in pids:
+                if pid:
+                    # 排除 pgrep 自己的进程（虽然 pgrep 通常不会匹配自己，但为了安全）
+                    # 实际上 pgrep 可能会匹配到包含 task_id 的其他命令，需小心
+                    # 这里假设 task_id 是 UUID，冲突概率极低
+                    try:
+                        os.kill(int(pid), 9)  # SIGKILL
+                        killed_any = True
+                    except ProcessLookupError:
+                        pass # 进程可能已经结束
+                    except Exception as e:
+                        print(f"停止 PID {pid} 时出错: {e}")
+            
+            if killed_any:
+                print(f"任务 {task_id} 已停止 (Linux)。")
+                return True, "任务已停止"
+            else:
+                return False, "未找到运行中的任务"
+
+    except Exception as e:
+        error_msg = f"停止任务 {task_id} 时发生错误: {e}"
+        print(error_msg)
+        return False, error_msg

@@ -12,7 +12,7 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from db_handler import DBHandler
 from logger import setup_logger
-from task_scheduler import add_tasks_to_cron, update_tasks_in_cron, delete_tasks_from_cron, list_tasks_in_cron, convert_to_cron_time, run_task_immediately
+from task_scheduler import add_tasks_to_cron, update_tasks_in_cron, delete_tasks_from_cron, list_tasks_in_cron, convert_to_cron_time, run_task_immediately, stop_task
 
 
 app = Flask(__name__)
@@ -902,14 +902,28 @@ def run_task_immediately(task_id):
         raise ValueError(f"找不到 task_id 为 {task_id} 的任务。")
 
 @app.route('/run_task_now/<task_id>', methods=['POST'])
+@login_required
 def run_task_now(task_id):
     try:
-        # 调用立即运行任务的函数
         run_task_immediately(task_id)
-        flash(f"任务 {task_id} 已成功运行！", 'success')
+        flash('任务已触发立即运行！', 'success')
     except Exception as e:
-        flash(f"运行任务 {task_id} 时出错: {e}", 'error')
+        flash(f"运行任务时出错: {e}", 'error')
+    
+    return redirect(url_for('scheduled_tasks'))
 
+@app.route('/stop_task/<task_id>', methods=['POST'])
+@login_required
+def stop_task_route(task_id):
+    try:
+        success, message = stop_task(task_id)
+        if success:
+            flash(message, 'success')
+        else:
+            flash(message, 'warning')
+    except Exception as e:
+        flash(f"停止任务时出错: {e}", 'error')
+    
     return redirect(url_for('scheduled_tasks'))
 
 

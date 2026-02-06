@@ -52,6 +52,10 @@
                     <form action="{{ url_for('run_task_now', task_id=task['task_id']) }}" method="POST" style="display:inline;">
                         <button type="submit" class="btn btn-success btn-sm">立即运行</button>
                     </form>
+                    <!-- 停止运行按钮 -->
+                    <form action="{{ url_for('stop_task_route', task_id=task['task_id']) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-secondary btn-sm" onclick="return confirm('确定要停止该任务吗？');">停止运行</button>
+                    </form>
                 </td>
             </tr>
         {% endfor %}

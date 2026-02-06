@@ -14,6 +14,14 @@ from db_handler import DBHandler
 from logger import setup_logger
 from scheduler import scheduler_manager, convert_to_cron_time
 
+# 确保配置目录存在
+config_dir = '/config'
+if not os.path.exists(config_dir):
+    try:
+        os.makedirs(config_dir)
+    except Exception as e:
+        print(f"Failed to create config directory: {e}")
+
 # 初始化调度器
 scheduler_manager.init_scheduler()
 

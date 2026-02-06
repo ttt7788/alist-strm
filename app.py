@@ -23,7 +23,12 @@ if not os.path.exists(config_dir):
         print(f"Failed to create config directory: {e}")
 
 # 初始化调度器
-scheduler_manager.init_scheduler()
+try:
+    scheduler_manager.init_scheduler()
+except Exception as e:
+    logger.error(f"Failed to initialize scheduler: {e}")
+    # Don't exit here, let the app start so we can see the error in logs
+    pass
 
 app = Flask(__name__)
 app.secret_key = 'www.tefuir0829.cn'

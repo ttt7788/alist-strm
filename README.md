@@ -48,7 +48,7 @@
 #### 命令行版本：
 
 ```shell
-docker run -d --name alist-strm -p 18080:5000 -v /home:/home  - /volume1/alist-strm/config:/config  itefuir/alist-strm:latest
+docker run -d --name alist-strm -p 18080:5000 -v /home:/home  - /volume1/alist-strm/config:/config  brian9909/alist-strm:latest
 
 #18080是宿主机端口 不是一定要这个 容器端口5000是一定要的
 #/home是本地路径
@@ -57,23 +57,21 @@ docker run -d --name alist-strm -p 18080:5000 -v /home:/home  - /volume1/alist-s
 #### docker-compose.yaml配置
 
 ```yaml
-version: "3"
 services:
-    alist-strm:
-        stdin_open: true
-        tty: true
-        volumes:
-            #跟命令行一样的 前面是宿主机的目录
-            - /volume1/video:/volume1/video
-            - /volume1/alist-strm/config:/config
-            #第二行填写的是容器中数据库的存放位置
-        ports:
-        	#:前面是宿主机的端口，自由选择
-            - "15000:5000"
-        container_name: alist-strm
-        #restart: always
-        image: itefuir/alist-strm:latest
-        network_mode: bridge
+  alist-strm:
+    image: brian9909/alist-strm:latest
+    container_name: alist-strm
+    restart: always
+    ports:
+      - "18080:5000"
+    volumes:
+      - ./config:/config
+      - ./logs:/app/logs
+      - ./data:/data
+    environment:
+      - TZ=Asia/Shanghai
+    # 如果需要以非 root 用户运行，且宿主机有权限问题，可能需要根据实际情况调整权限
+    # 目前镜像默认以 root 运行
 ```
 
 ###   拉取docker镜像网络原因看这里

@@ -1,0 +1,35 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow-lg border-0 rounded-4 p-5" style="width: 100%; max-width: 450px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px);">
+        <div class="text-center mb-4">
+            <i class="bi bi-cloud-arrow-down-fill text-primary" style="font-size: 4rem;"></i>
+            <h2 class="fw-bold text-dark mt-2">系统登录</h2>
+            <p class="text-muted small">欢迎回到 Alist-Strm 控制中心</p>
+        </div>
+        
+        <form method="POST">
+            <div class="mb-3">
+                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+                    <span class="input-group-text bg-white border-0 text-primary"><i class="bi bi-person-fill"></i></span>
+                    <input type="text" class="form-control border-0 bg-white" name="username" placeholder="请输入用户名" required>
+                </div>
+            </div>
+            <div class="mb-4">
+                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+                    <span class="input-group-text bg-white border-0 text-primary"><i class="bi bi-lock-fill"></i></span>
+                    <input type="password" class="form-control border-0 bg-white" name="password" placeholder="请输入密码" required>
+                </div>
+            </div>
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow"><i class="bi bi-box-arrow-in-right me-2"></i> 登 录</button>
+            </div>
+        </form>
+        
+        <div class="d-flex justify-content-between mt-4 small">
+            <a href="{{ url_for('register') }}" class="text-decoration-none text-muted">没有账号? 去注册</a>
+            <a href="{{ url_for('forgot_password') }}" class="text-decoration-none text-muted">忘记密码?</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

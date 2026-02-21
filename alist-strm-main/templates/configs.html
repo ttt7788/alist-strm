@@ -1,0 +1,73 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-hdd-network-fill text-primary me-2"></i>配置文件管理</h2>
+    <a href="{{ url_for('new_config') }}" class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="bi bi-plus-lg me-1"></i> 添加新配置</a>
+</div>
+
+{% if configs %}
+<form method="POST" action="{{ url_for('run_selected_configs') }}" id="config-form">
+    <div class="card p-3 mb-4 shadow-sm flex-row align-items-center justify-content-between bg-white border-0">
+        <div class="form-check ms-2">
+            <input class="form-check-input" type="checkbox" id="select-all" style="transform: scale(1.2);">
+            <label class="form-check-label fw-bold ms-1" for="select-all">全选</label>
+        </div>
+        <div>
+            <button type="button" class="btn btn-sm btn-success rounded-pill px-3" onclick="submitForm('run_selected')"><i class="bi bi-play-fill me-1"></i> 运行选中</button>
+            <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3 ms-2" onclick="submitForm('copy_selected')"><i class="bi bi-copy me-1"></i> 复制选中</button>
+            <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 ms-2" onclick="if(confirm('确认删除选定配置吗？')) submitForm('delete_selected')"><i class="bi bi-trash-fill me-1"></i> 删除选中</button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for config in configs %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm transition-hover bg-white border-0 rounded-4">
+                <div class="card-header bg-transparent border-bottom-0 pt-4 pb-0">
+                    <div class="d-flex align-items-center">
+                        <input class="form-check-input me-3" type="checkbox" name="selected_configs" value="{{ config[0] }}" style="transform: scale(1.2);">
+                        <h5 class="card-title fw-bold mb-0 text-truncate text-primary" title="{{ config[1] }}">{{ config[1] }}</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled text-muted small mb-0 mt-2">
+                        <li class="mb-2"><i class="bi bi-link-45deg text-center me-2 fs-5"></i> <span class="text-dark">{{ config[2] }}</span></li>
+                        <li class="mb-2"><i class="bi bi-person text-center me-2 fs-5"></i> <span class="text-dark">{{ config[3] }}</span></li>
+                        <li class="mb-2"><i class="bi bi-cloud text-center me-2 fs-5"></i> 云端: <span class="text-dark">{{ config[4] }}</span></li>
+                        <li><i class="bi bi-hdd text-center me-2 fs-5"></i> 本地: <span class="text-dark">{{ config[5] }}</span></li>
+                    </ul>
+                </div>
+                
+                <div class="card-footer bg-light bg-opacity-50 border-top pt-3 pb-3 rounded-bottom-4">
+                    <div class="d-flex flex-wrap justify-content-end gap-2">
+                        <a href="{{ url_for('logs', config_id=config[0]) }}" class="btn btn-sm btn-outline-info rounded-pill px-3"><i class="bi bi-file-text me-1"></i>日志</a>
+                        <a href="{{ url_for('copy_config', config_id=config[0]) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3"><i class="bi bi-copy me-1"></i>复制</a>
+                        <a href="{{ url_for('edit_config', config_id=config[0]) }}" class="btn btn-sm btn-outline-warning rounded-pill px-3 text-dark"><i class="bi bi-pencil-square me-1"></i>编辑</a>
+                        <a href="{{ url_for('delete_config', config_id=config[0]) }}" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('确认删除此配置吗？')"><i class="bi bi-trash me-1"></i>删除</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <input type="hidden" name="action" id="action" value="">
+</form>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-inboxes text-muted opacity-50" style="font-size: 5rem;"></i>
+    <h5 class="text-muted mt-3">空空如也，赶快添加一个新配置吧！</h5>
+</div>
+{% endif %}
+
+<script>
+    document.getElementById('select-all').addEventListener('change', function() {
+        let checkboxes = document.querySelectorAll('input[name="selected_configs"]');
+        for (let checkbox of checkboxes) checkbox.checked = this.checked;
+    });
+    function submitForm(action) {
+        document.getElementById('action').value = action;
+        document.getElementById('config-form').submit();
+    }
+</script>
+{% endblock %}

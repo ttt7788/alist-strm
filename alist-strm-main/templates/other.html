@@ -1,0 +1,59 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-tools text-secondary me-2"></i>其他工具箱</h2>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0 rounded-4 p-4 h-100 bg-white">
+            <h5 class="fw-bold mb-3"><i class="bi bi-link-45deg text-primary me-2"></i>STRM 域名批量替换</h5>
+            <p class="text-muted small mb-4">当您的 WebDAV 服务器 IP 或域名发生变更时，使用此工具一键批量替换本地所有现存 `.strm` 文件内的链接地址。</p>
+            
+            <form method="POST" action="{{ url_for('other') }}">
+                <input type="hidden" name="action" value="edit">
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">本地目标目录</label>
+                    <input type="text" class="form-control bg-light" name="target_directory" value="{{ script_params.get('target_directory', '') }}" placeholder="例如：/data/..." required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">旧域名/IP</label>
+                    <input type="text" class="form-control bg-light" name="old_domain" value="{{ script_params.get('old_domain', '') }}" placeholder="例如：http://192.168.1.100:8080" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold small">新域名/IP</label>
+                    <input type="text" class="form-control bg-light" name="new_domain" value="{{ script_params.get('new_domain', '') }}" placeholder="例如：https://my.domain.com" required>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-outline-primary rounded-pill px-4"><i class="bi bi-save me-1"></i> 保存参数</button>
+                </div>
+            </form>
+            
+            <hr class="text-muted my-4">
+            
+            <form method="POST" action="{{ url_for('other') }}">
+                <input type="hidden" name="action" value="run">
+                <button type="submit" class="btn btn-danger w-100 rounded-pill fw-bold shadow-sm" onclick="return confirm('警告：该操作将遍历目录并覆盖文件内容，确认旧域名和新域名填写无误吗？')">
+                    <i class="bi bi-rocket-takeoff me-1"></i> 立即执行替换
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0 rounded-4 bg-dark h-100 overflow-hidden">
+            <div class="card-header bg-black bg-opacity-50 border-bottom border-secondary d-flex justify-content-between py-2">
+                <span class="text-secondary small"><i class="bi bi-circle-fill text-danger me-1"></i><i class="bi bi-circle-fill text-warning me-1"></i><i class="bi bi-circle-fill text-success me-2"></i> replace_domain.log</span>
+                <a href="{{ url_for('other') }}" class="text-info small text-decoration-none"><i class="bi bi-arrow-clockwise"></i> 刷新日志</a>
+            </div>
+            <div class="card-body p-0">
+                <pre class="p-4 font-monospace text-light m-0" style="height: 500px; overflow-y: auto; font-size: 13px; line-height: 1.6; white-space: pre-wrap;">{{ log_content }}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

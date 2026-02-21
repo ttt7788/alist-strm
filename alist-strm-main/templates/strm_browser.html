@@ -1,0 +1,83 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-folder2-open text-primary me-2"></i>STRM 库浏览器</h2>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0 rounded-4 p-4 h-100">
+            <h5 class="fw-bold mb-4"><i class="bi bi-hdd-rack text-info me-2"></i>选择配置</h5>
+            <div class="list-group list-group-flush" id="config-list">
+                {% for config in configs %}
+                <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center border-0 rounded-3 mb-2 bg-light" onclick="loadDirectory('{{ config[0] }}', '')">
+                    <span><i class="bi bi-server text-secondary me-2"></i>{{ config[1] }}</span>
+                    <i class="bi bi-chevron-right text-muted small"></i>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm border-0 rounded-4 p-0 h-100 overflow-hidden">
+            <div class="bg-light border-bottom p-3 d-flex align-items-center">
+                <button class="btn btn-sm btn-outline-secondary me-3" id="btn-up" onclick="goUp()" disabled><i class="bi bi-level-up"></i> 返回上级</button>
+                <span class="text-muted font-monospace small" id="current-path">/ (根目录)</span>
+            </div>
+            <div class="card-body p-0" style="height: 500px; overflow-y: auto;">
+                <div class="list-group list-group-flush" id="file-list">
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-arrow-left-circle fs-2 mb-3"></i><br>请先在左侧选择一个配置
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentConfigId = null;
+    let currentPath = '';
+
+    function loadDirectory(configId, path) {
+        currentConfigId = configId;
+        currentPath = path;
+        $('#current-path').text('/' + path);
+        $('#btn-up').prop('disabled', path === '');
+
+        $('#file-list').html('<div class="text-center py-5 text-primary"><div class="spinner-border" role="status"></div><div class="mt-2">加载中...</div></div>');
+
+        $.getJSON('/api/browse_strm', { config_id: configId, path: path }, function(data) {
+            if (data.error) {
+                $('#file-list').html(`<div class="p-4 text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>${data.error}</div>`);
+                return;
+            }
+            
+            let html = '';
+            if (data.items.length === 0) {
+                html = '<div class="text-center py-5 text-muted">此目录为空</div>';
+            } else {
+                data.items.forEach(function(item) {
+                    let nextPath = path ? path + '/' + item.name : item.name;
+                    if (item.type === 'directory') {
+                        html += `<button type="button" class="list-group-item list-group-item-action py-3 border-bottom-0 border-top" onclick="loadDirectory('${configId}', '${nextPath}')"><i class="bi bi-folder-fill text-warning me-3 fs-5"></i><span class="fw-bold">${item.name}</span></button>`;
+                    } else {
+                        html += `<div class="list-group-item py-3 border-bottom-0 border-top bg-light bg-opacity-50"><i class="bi bi-file-earmark-play-fill text-primary me-3 fs-5"></i><span class="text-dark">${item.name}</span></div>`;
+                    }
+                });
+            }
+            $('#file-list').html(html);
+        }).fail(function() {
+            $('#file-list').html('<div class="p-4 text-danger">请求失败，请检查网络或后端日志。</div>');
+        });
+    }
+
+    function goUp() {
+        if (!currentPath) return;
+        let parts = currentPath.split('/');
+        parts.pop();
+        loadDirectory(currentConfigId, parts.join('/'));
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ url_for('scheduled_tasks') }}" class="btn btn-outline-secondary rounded-pill me-3 px-3 shadow-sm"><i class="bi bi-arrow-left me-1"></i>返回列表</a>
+            <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-fill text-primary me-2"></i>添加定时任务</h2>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 bg-white">
+            <form method="POST">
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold"><i class="bi bi-fonts text-muted me-1"></i>任务名称</label>
+                    <input type="text" class="form-control form-control-lg bg-light fs-6" name="task_name" placeholder="给任务起个好记的名字..." required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold"><i class="bi bi-hdd-network text-muted me-1"></i>关联配置文件 <span class="text-danger">*</span></label>
+                    <select class="form-select bg-light" name="config_ids" multiple required style="height: 120px;">
+                        {% for config in configs %}
+                        <option value="{{ config[0] }}">{{ config[1] }} (ID: {{ config[0] }})</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text"><i class="bi bi-info-circle"></i> 按住 Ctrl (Windows) 或 Command (Mac) 可多选。</div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold"><i class="bi bi-calendar-event text-muted me-1"></i>频率单位</label>
+                        <select class="form-select form-select-lg bg-light fs-6" name="interval_type" id="interval_type">
+                            <option value="minute">每 X 分钟执行</option>
+                            <option value="hourly">每 X 小时执行</option>
+                            <option value="daily">每 X 天执行</option>
+                            <option value="weekly">每周 星期 X 执行</option>
+                            <option value="monthly">每月 X 号执行</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold"><i class="bi bi-123 text-muted me-1"></i>频率数值 (X)</label>
+                        <input type="number" class="form-control form-control-lg bg-light fs-6" name="interval_value" value="1" required min="1">
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold"><i class="bi bi-cpu text-muted me-1"></i>执行模式</label>
+                        <select class="form-select form-select-lg bg-light fs-6" name="task_mode">
+                            <option value="strm_creation">STRM 同步与生成 (常规)</option>
+                            <option value="strm_validation_quick">STRM 有效性检测 (快扫)</option>
+                            <option value="strm_validation_slow">STRM 有效性检测 (慢扫)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold"><i class="bi bi-toggle-on text-muted me-1"></i>初始状态</label>
+                        <select class="form-select form-select-lg bg-light fs-6" name="is_enabled">
+                            <option value="1">立即启用</option>
+                            <option value="0">暂不启用 (禁用)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end pt-3 border-top">
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold"><i class="bi bi-calendar-plus me-1"></i>创建定时任务</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

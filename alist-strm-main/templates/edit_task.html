@@ -1,0 +1,67 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ url_for('scheduled_tasks') }}" class="btn btn-outline-secondary rounded-pill me-3"><i class="bi bi-arrow-left"></i> 返回</a>
+            <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-pencil-square text-warning me-2"></i>编辑定时任务</h2>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            <form method="POST">
+                <div class="mb-4">
+                    <label class="form-label fw-bold">任务名称</label>
+                    <input type="text" class="form-control bg-light" name="task_name" value="{{ task.task_name }}" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">关联配置文件</label>
+                    <select class="form-select bg-light" name="config_ids" multiple required style="height: 120px;">
+                        {% for config in configs %}
+                        <option value="{{ config[0] }}" {% if config[0]|string in selected_config_ids %}selected{% endif %}>{{ config[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">频率单位</label>
+                        <select class="form-select bg-light" name="interval_type" id="interval_type">
+                            <option value="minute">每 X 分钟</option>
+                            <option value="hourly">每 X 小时</option>
+                            <option value="daily">每 X 天</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">频率数值 (X)</label>
+                        <input type="number" class="form-control bg-light" name="interval_value" value="1" required min="1">
+                        <div class="form-text text-muted">当前 Cron 表达式: {{ task.cron_expression }}</div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-5">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">执行模式</label>
+                        <select class="form-select bg-light" name="task_mode">
+                            <option value="strm_creation" {% if task.task_mode == 'strm_creation' %}selected{% endif %}>STRM 同步与生成</option>
+                            <option value="strm_validation_quick" {% if task.task_mode == 'strm_validation_quick' %}selected{% endif %}>STRM 有效性检测 (快扫)</option>
+                            <option value="strm_validation_slow" {% if task.task_mode == 'strm_validation_slow' %}selected{% endif %}>STRM 有效性检测 (慢扫)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">状态</label>
+                        <select class="form-select bg-light" name="is_enabled">
+                            <option value="1" {% if task.is_enabled %}selected{% endif %}>启用</option>
+                            <option value="0" {% if not task.is_enabled %}selected{% endif %}>禁用</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-warning btn-lg rounded-pill px-5 shadow-sm fw-bold text-dark"><i class="bi bi-save me-1"></i> 更新任务</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

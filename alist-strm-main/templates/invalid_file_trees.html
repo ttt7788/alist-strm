@@ -1,0 +1,140 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>失效的 .strm 文件目录树</h1>
+        <!-- 触发模态框的按钮 -->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#manualValidationModal">
+            手动运行检测
+        </button>
+    </div>
+
+    {% if invalid_file_trees %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>目录树名称</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invalid_file_tree in invalid_file_trees %}
+            <tr>
+                <td>{{ invalid_file_tree['name'].replace('.json', '') }}</td>
+                <td>
+                    <button class="btn btn-info btn-sm" onclick="viewDirectory('{{ invalid_file_tree['name'] }}')">查看</button>
+                    <button class="btn btn-warning btn-sm" onclick="recheckDirectory('{{ invalid_file_tree['name'] }}')">重新检测</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteDirectory('{{ invalid_file_tree['name'] }}')">删除</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>尚未进行 STRM 有效性检验，无法提供失效目录树。</p>
+    {% endif %}
+</div>
+
+<!-- 模态框，用于手动运行检测 -->
+<div class="modal fade" id="manualValidationModal" tabindex="-1" aria-labelledby="manualValidationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="manualValidationModalLabel">手动运行 STRM 检测</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+      </div>
+      <form action="{{ url_for('start_manual_validation') }}" method="POST">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="config_id" class="form-label">选择配置</label>
+            <select class="form-select" id="config_id" name="config_id" required>
+                {% for config in configs %}
+                    <option value="{{ config[0] }}">{{ config[1] }} (ID: {{ config[0] }})</option>
+                {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="scan_mode" class="form-label">检测模式</label>
+            <select class="form-select" id="scan_mode" name="scan_mode" required>
+                <option value="quick">快速扫描 (基于缓存)</option>
+                <option value="slow">完整扫描 (遍历文件)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">开始检测</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 模态框，用于显示目录树结构 -->
+<div class="modal fade" id="directoryModal" tabindex="-1" aria-labelledby="directoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg"> <!-- 保持宽度不变 -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ selected_directory_name }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+      </div>
+      <div class="modal-body" style="max-height: 300px; overflow-y: auto;"> <!-- 仅对内容部分进行高度限制 -->
+        <pre id="directoryContent"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+    function recheckDirectory(directoryName) {
+        if (confirm("确定要重新检测此配置的 STRM 文件吗？这将在后台启动快扫任务。")) {
+            fetch(`/recheck_invalid_directory/${encodeURIComponent(directoryName)}`, {
+                method: 'POST',
+            }).then(response => {
+                if (response.ok) {
+                    alert("检测任务已启动，请稍后刷新查看结果或查看日志。");
+                } else {
+                    alert("启动检测失败");
+                }
+            });
+        }
+    }
+
+    function deleteDirectory(directoryName) {
+        if (confirm("确定要删除此目录及其下的所有 .strm 文件和空文件夹吗？")) {
+            fetch(`/delete_invalid_directory/${encodeURIComponent(directoryName)}`, {
+                method: 'POST',
+            }).then(response => {
+                if (response.ok) {
+                    alert("删除成功");
+                    location.reload();
+                } else {
+                    alert("删除失败");
+                }
+            });
+        }
+    }
+
+    function viewDirectory(directoryName) {
+        fetch(`/get_invalid_file_tree/${encodeURIComponent(directoryName)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.structure) {
+                // 将 JSON 格式化并显示在模态框中
+                const formattedJson = JSON.stringify(data.structure, null, 4);
+                document.getElementById('directoryContent').textContent = formattedJson;
+                // 显示模态框
+                var directoryModal = new bootstrap.Modal(document.getElementById('directoryModal'));
+                directoryModal.show();
+            } else {
+                alert("无法获取目录结构。");
+            }
+        });
+    }
+</script>
+{% endblock %}

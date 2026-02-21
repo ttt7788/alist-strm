@@ -1,0 +1,62 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="d-flex justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <h2 class="fw-bold mb-0 text-dark"><i class="fas fa-cog text-primary me-2"></i>脚本全局设置</h2>
+        </div>
+
+        <div class="card shadow border-0 rounded-4">
+            <div class="card-body p-5">
+                <form method="POST">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold"><i class="fas fa-video text-secondary me-2"></i>视频格式</label>
+                            <input type="text" class="form-control form-control-lg bg-light" name="video_formats" value="{{ ','.join(script_config.video_formats) }}" placeholder="mp4,mkv,avi...">
+                            <div class="form-text">逗号分隔，建议涵盖常见格式。</div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold"><i class="fas fa-closed-captioning text-secondary me-2"></i>字幕格式</label>
+                            <input type="text" class="form-control form-control-lg bg-light" name="subtitle_formats" value="{{ ','.join(script_config.subtitle_formats) }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold"><i class="fas fa-image text-secondary me-2"></i>图片格式</label>
+                            <input type="text" class="form-control form-control-lg bg-light" name="image_formats" value="{{ ','.join(script_config.image_formats) }}">
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold"><i class="fas fa-file-code text-secondary me-2"></i>元数据格式</label>
+                            <input type="text" class="form-control form-control-lg bg-light" name="metadata_formats" value="{{ ','.join(script_config.metadata_formats) }}" placeholder="nfo...">
+                        </div>
+                    </div>
+
+                    <hr class="my-4 text-muted">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold"><i class="fas fa-weight-hanging text-secondary me-2"></i>视频忽略阈值 (MB)</label>
+                            <div class="input-group input-group-lg">
+                                <input type="number" class="form-control bg-light" name="size_threshold" value="{{ script_config.size_threshold }}" required>
+                                <span class="input-group-text bg-white">MB</span>
+                            </div>
+                            <div class="form-text">小于此大小的视频将不会生成 strm 文件。</div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold"><i class="fas fa-network-wired text-secondary me-2"></i>下载与生成并发线程数</label>
+                            <input type="number" class="form-control form-control-lg bg-light" name="download_threads" value="{{ script_config.download_threads }}" required min="1" max="20">
+                            <div class="form-text text-warning"><i class="fas fa-exclamation-triangle"></i> 建议设置在 1-10 之间，过大易触发网盘风控。</div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-2">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm"><i class="fas fa-save me-2"></i>保存全局配置</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

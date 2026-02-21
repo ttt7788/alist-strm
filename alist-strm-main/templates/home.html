@@ -1,0 +1,143 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 bg-primary text-white rounded-4" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                <div class="card-body p-5">
+                    <h1 class="card-title fw-bold"><i class="bi bi-speedometer2 me-3"></i>Alist-Strm 控制中心</h1>
+                    <p class="card-text fs-5 mt-3 text-white-50">高效管理您的 WebDAV 资源，轻松实现 STRM 文件的全量与增量同步。</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('configs') }}" class="btn btn-light text-primary fw-bold rounded-pill px-4 me-2 shadow-sm"><i class="bi bi-hdd-network me-1"></i> 配置文件</a>
+                        <a href="{{ url_for('scheduled_tasks') }}" class="btn btn-outline-light rounded-pill px-4"><i class="bi bi-clock-history me-1"></i> 定时任务</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-4 bg-white">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-activity text-primary me-2"></i>实时运行状态</h5>
+                    <div class="p-3 rounded-3 border d-flex align-items-center" id="progress-container" style="background-color: #f8f9fa; transition: all 0.3s ease;">
+                        
+                        <div class="spinner-grow spinner-grow-sm text-primary me-3" role="status" id="progress-spinner" style="display: none;"></div>
+                        
+                        <i class="bi bi-cup-hot text-muted me-3 fs-5" id="idle-icon"></i>
+                        
+                        <span id="progress-text" class="font-monospace text-muted mb-0" style="font-size: 15px;">当前系统空闲，暂无执行中的同步任务。</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if invalid_file_trees %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-4 border-start border-danger border-5 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-danger mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>发现失效的 STRM 文件/目录！</h5>
+                        <a href="{{ url_for('invalid_file_trees') }}" class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm">前往处理 <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <p class="text-muted small mb-3">系统检测到以下目录或文件在云端已不存在，但本地仍残留 STRM 文件：</p>
+                    <div class="row g-3">
+                        {% for tree in invalid_file_trees %}
+                        <div class="col-md-4 col-lg-3">
+                            <div class="p-3 bg-light rounded-3 border border-danger border-opacity-25 d-flex align-items-center">
+                                <i class="bi bi-filetype-json text-danger fs-4 me-3"></i>
+                                <div class="text-truncate">
+                                    <div class="fw-bold text-dark text-truncate" title="{{ tree.name }}">{{ tree.name }}</div>
+                                    <div class="small text-muted">需要清理</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4 transition-hover bg-white">
+                <div class="card-body p-4 text-center">
+                    <div class="display-4 mb-3"><i class="bi bi-lightning-charge-fill icon-gradient-primary"></i></div>
+                    <h5 class="card-title fw-bold text-dark">多线程高效同步</h5>
+                    <p class="card-text text-muted small">支持全量覆盖与增量比对更新，利用多线程技术告别卡顿，实现海量文件的秒级处理。</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4 transition-hover bg-white">
+                <div class="card-body p-4 text-center">
+                    <div class="display-4 mb-3"><i class="bi bi-database-fill-check icon-gradient-success"></i></div>
+                    <h5 class="card-title fw-bold text-dark">数据库日志管理</h5>
+                    <p class="card-text text-muted small">全新的 SQLite 日志存储机制，大幅减少磁盘 I/O 占用，保障程序在后台稳定流畅运行。</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4 transition-hover bg-white">
+                <div class="card-body p-4 text-center">
+                    <div class="display-4 mb-3"><i class="bi bi-stars icon-gradient-warning"></i></div>
+                    <h5 class="card-title fw-bold text-dark">自动校验与清理</h5>
+                    <p class="card-text text-muted small">定时任务自动校验 STRM 文件的有效性，一键清理失效文件，保持媒体库的纯净。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function fetchTaskProgress() {
+        $.ajax({
+            url: "{{ url_for('api_task_progress') }}",
+            type: "GET",
+            success: function(data) {
+                const textElem = $('#progress-text');
+                const spinnerElem = $('#progress-spinner');
+                const idleIcon = $('#idle-icon');
+                const container = $('#progress-container');
+                
+                if (data.status === 'running') {
+                    // 运行中状态UI
+                    idleIcon.hide();
+                    spinnerElem.show();
+                    container.css('background-color', '#e7f1ff'); // 浅蓝色背景
+                    container.css('border-color', '#b6d4fe');
+                    textElem.removeClass('text-muted').addClass('text-primary fw-bold');
+                    textElem.text("【运行中】" + data.message);
+                } else {
+                    // 闲置状态UI
+                    spinnerElem.hide();
+                    idleIcon.show();
+                    container.css('background-color', '#f8f9fa'); // 恢复浅灰色
+                    container.css('border-color', '#dee2e6');
+                    textElem.removeClass('text-primary fw-bold').addClass('text-muted');
+                    
+                    if (data.message) {
+                        textElem.text("上一次任务汇报：" + data.message);
+                    } else {
+                        textElem.text("当前系统空闲，暂无执行中的同步任务。");
+                    }
+                }
+            },
+            error: function() {
+                console.warn("后台任务进度查询失败...");
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        fetchTaskProgress(); // 页面加载后立即请求一次
+        setInterval(fetchTaskProgress, 3000); // 每 3 秒定时刷新
+    });
+</script>
+{% endblock %}

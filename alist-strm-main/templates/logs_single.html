@@ -1,0 +1,41 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-pill me-3"><i class="bi bi-arrow-left"></i> 返回</a>
+        <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-terminal-fill text-dark me-2"></i>运行日志 (配置 ID: {{ config_id }})</h2>
+    </div>
+    <button onclick="fetchLogs()" class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="bi bi-arrow-clockwise me-1"></i> 手动刷新</button>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4 bg-dark overflow-hidden">
+    <div class="card-header bg-black bg-opacity-50 border-bottom border-secondary d-flex justify-content-between py-2">
+        <span class="text-secondary small"><i class="bi bi-circle-fill text-danger me-1"></i><i class="bi bi-circle-fill text-warning me-1"></i><i class="bi bi-circle-fill text-success me-2"></i> 终端输出</span>
+        <span class="text-secondary small">自动刷新: 开启中...</span>
+    </div>
+    <div class="card-body p-0">
+        <div id="log-container" class="p-4 font-monospace text-light" style="height: 65vh; overflow-y: auto; font-size: 14px; line-height: 1.6;">
+            {{ log_content|safe }}
+        </div>
+    </div>
+</div>
+
+<script>
+    function fetchLogs() {
+        $.ajax({
+            url: "{{ url_for('api_logs', config_id=config_id) }}",
+            type: "GET",
+            success: function(data) {
+                if(data.content) {
+                    $('#log-container').html(data.content);
+                }
+            },
+            error: function() {
+                console.error("无法拉取最新日志");
+            }
+        });
+    }
+    // 每 3 秒自动刷新一次日志
+    setInterval(fetchLogs, 3000);
+</script>
+{% endblock %}

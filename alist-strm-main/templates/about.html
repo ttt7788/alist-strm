@@ -1,0 +1,31 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 text-center">
+        <div class="card shadow-sm border-0 rounded-4 p-5 mb-4 bg-white bg-opacity-75" style="backdrop-filter: blur(10px);">
+            <i class="bi bi-cloud-arrow-down-fill text-primary" style="font-size: 5rem;"></i>
+            <h1 class="fw-bold mt-3 mb-1 text-dark">Alist-Strm</h1>
+            <p class="text-muted mb-4">高性能 WebDAV 同步与 STRM 文件生成工具</p>
+            
+            <hr class="w-25 mx-auto text-muted mb-4">
+            
+            <div class="d-flex justify-content-center gap-4 mb-4">
+                <a href="https://github.com/Brian099/alist-strm" target="_blank" class="btn btn-dark rounded-pill px-4 shadow-sm"><i class="bi bi-github me-2"></i>开源仓库</a>
+                <a href="https://hub.docker.com/r/brian9909/alist-strm" target="_blank" class="btn btn-info text-white rounded-pill px-4 shadow-sm"><i class="bi bi-box-seam me-2"></i>Docker 镜像</a>
+            </div>
+            
+            <div class="bg-light rounded-4 p-3 text-start small text-muted shadow-sm border">
+                <strong><i class="bi bi-stars text-warning me-1"></i> 核心特性：</strong>
+                <ul class="mb-0 mt-2" style="line-height: 1.8;">
+                    <li>支持多线程并发生成，海量文件秒级同步。</li>
+                    <li>全量强制覆盖与增量跳过智能比对机制。</li>
+                    <li>底层采用 SQLite 高性能存储日志，告别 I/O 阻塞。</li>
+                    <li>全站响应式毛玻璃 UI 设计与 Bootstrap Icons。</li>
+                    <li>内置 Cron 定时调度与失效清理机制。</li>
+                </ul>
+            </div>
+        </div>
+        <p class="text-muted small">Version {{ g.local_version }} &copy; 2026</p>
+    </div>
+</div>
+{% endblock %}

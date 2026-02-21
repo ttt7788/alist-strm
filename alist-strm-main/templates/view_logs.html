@@ -1,0 +1,29 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <a href="{{ url_for('scheduled_tasks') }}" class="btn btn-outline-secondary rounded-pill me-3"><i class="bi bi-arrow-left"></i> 返回任务列表</a>
+        <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-terminal-fill text-dark me-2"></i>任务日志 (ID: {{ task_id }})</h2>
+    </div>
+    <button onclick="location.reload()" class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="bi bi-arrow-clockwise me-1"></i> 刷新日志</button>
+</div>
+
+{% if log_contents %}
+    {% for log in log_contents %}
+    <div class="card shadow-sm border-0 rounded-4 bg-dark overflow-hidden mb-4">
+        <div class="card-header bg-black bg-opacity-50 border-bottom border-secondary d-flex justify-content-between py-2">
+            <span class="text-secondary small"><i class="bi bi-circle-fill text-danger me-1"></i><i class="bi bi-circle-fill text-warning me-1"></i><i class="bi bi-circle-fill text-success me-2"></i> 文件名: {{ log.filename }}</span>
+        </div>
+        <div class="card-body p-0">
+            <pre class="p-4 font-monospace text-light m-0" style="height: 60vh; overflow-y: auto; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">{{ log.content }}</pre>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="card shadow-sm border-0 rounded-4 p-5 text-center bg-white">
+        <i class="bi bi-file-earmark-x text-muted" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">暂无日志记录</h4>
+        <p class="text-muted small">该任务可能尚未执行，或者日志文件已被清理。</p>
+    </div>
+{% endif %}
+{% endblock %}
